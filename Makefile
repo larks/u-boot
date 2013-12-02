@@ -3295,7 +3295,7 @@ m2s-som-copy2_config :  unconfig
 ## University of Bergen
 #########################################################################
 
-m2s-rcu-2_config :	unconfig
+rcu-2.0_config :	unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexm3 m2s-som emcraft m2s
 
 #########################################################################
