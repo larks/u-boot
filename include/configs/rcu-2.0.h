@@ -63,13 +63,14 @@
 //#if (CONFIG_SYS_BOARD_REV!=0x1A) && (CONFIG_SYS_BOARD_REV!=0x2A)
 //#error CONFIG_SYS_BOARD_REV must be 1A or 2A
 //#endif
-
+/*
 #if (CONFIG_SYS_BOARD_REV==0x1A)
 # define CONFIG_SYS_BOARD_REV_STR	"1A"
 #else
 # define CONFIG_SYS_BOARD_REV_STR	"2A"
 #endif
-
+*/
+#define CONFIG_SYS_BOARD_REV_STR	"0A"
 /*
  * Display CPU and Board information
  */
@@ -311,10 +312,10 @@
  */
 #define CONFIG_EXTRA_ENV_SETTINGS				\
 	"loadaddr=" MK_STR(UIMAGE_LOADADDR) "\0"		\
-	"ethaddr=C0:B1:3C:83:83:83\0"				\
-	"ipaddr=172.17.4.219\0"					\
-	"serverip=172.17.0.1\0"					\
-	"image=networking.uImage\0"				\
+	"ethaddr=00:50:C2:DB:2C:9F\0"				\
+	"ipaddr=192.168.1.11\0"					\
+	"serverip=192.168.1.10\0"					\
+	"image=rculinux.uImage\0"				\
 	"spiaddr=" MK_STR(CONFIG_ENV_IMG_OFFSET) "\0"		\
 	"spisize=400000\0"					\
 	"spiprobe=sf probe " MK_STR(CONFIG_SPI_FLASH_BUS) "\0"	\

@@ -1,5 +1,5 @@
 /*
- * board/emcraft/m2s-som/board.c
+ * board/UiB/rcu-2.0/board.c
  *
  * Board specific code the the Emcraft SmartFusion2 system-on-module (SOM).
  *
@@ -92,7 +92,7 @@ int board_init(void)
 
 int checkboard(void)
 {
-	printf("Board: M2S-SOM Rev %s, www.emcraft.com\n",
+	printf("Board: RCU-2.0 Rev %s\n",
 		CONFIG_SYS_BOARD_REV_STR);
 	return 0;
 }
