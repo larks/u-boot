@@ -28,6 +28,9 @@
 #include <netdev.h>
 #include <asm/arch/ddr.h>
 
+#include "mss_spi/mss_spi.h"
+const uint8_t frame_size = 16u;
+
 /*
  * Generate DDR timings depending on the following DDR clock
  */
@@ -36,6 +39,7 @@
 /*
  * Common conversion macros used for DDR cfg
  */
+
 #define M2S_CLK_VAL(ns, div)	((((ns) * M2S_DDR_MHZ) / div))
 #define M2S_CLK_MOD(ns, div)	((((ns) * M2S_DDR_MHZ) % div))
 
@@ -53,30 +57,30 @@
 #define M2S_CLK1024_MAX(ns)	(M2S_CLK_VAL(ns,1024000))
 
 /*
- * MT46H32M16LFBF-6 params & timings
+ * MT41J256M8 params & timings
  */
-#define DDR_BL			8	/* Burst length (value)		*/
-#define DDR_MR_BL		3	/* Burst length (power of 2)	*/
-#define DDR_BT			0	/* Burst type int(1)/seq(0)	*/
+//#define DDR_BL			8	/* Burst length (value)		*/
+//#define DDR_MR_BL		3	/* Burst length (power of 2)	*/
+//#define DDR_BT			0	/* Burst type int(1)/seq(0)	*/
 
-#define DDR_CL			3	/* CAS (read) latency		*/
-#define DDR_WL			1	/* Write latency		*/
-#define DDR_tMRD		2
-#define DDR_tWTR		2
-#define DDR_tXP			1
-#define DDR_tCKE		1
+//#define DDR_CL			9	/* CAS (read) latency		*/
+//#define DDR_WL			1	/* Write latency		*/
+/*#define DDR_tMRD		2*/
+/*#define DDR_tWTR		2*/
+/*#define DDR_tXP			1*/
+/*#define DDR_tCKE		1*/
 
-#define DDR_tRFC		M2S_CLK_MIN(72)
-#define DDR_tREFI		M2S_CLK32_MAX(7800)
-#define DDR_tCKE_pre		M2S_CLK1024_MIN(200000)
-#define DDR_tCKE_post		M2S_CLK1024_MIN(400)
-#define DDR_tRCD		M2S_CLK_MIN(18)
-#define DDR_tRRD		M2S_CLK_MIN(12)
-#define DDR_tRP			M2S_CLK_MIN(18)
-#define DDR_tRC			M2S_CLK_MIN(60)
-#define DDR_tRAS_max		M2S_CLK1024_MAX(70000)
-#define DDR_tRAS_min		M2S_CLK_MIN(42)
-#define DDR_tWR			M2S_CLK_MIN(15)
+/*#define DDR_tRFC		M2S_CLK_MIN(72)*/
+/*#define DDR_tREFI		M2S_CLK32_MAX(7800)*/
+/*#define DDR_tCKE_pre		M2S_CLK1024_MIN(200000)*/
+/*#define DDR_tCKE_post		M2S_CLK1024_MIN(400)*/
+/*#define DDR_tRCD		M2S_CLK_MIN(18)*/
+/*#define DDR_tRRD		M2S_CLK_MIN(12)*/
+/*#define DDR_tRP			M2S_CLK_MIN(18)*/
+/*#define DDR_tRC			M2S_CLK_MIN(60)*/
+/*#define DDR_tRAS_max		M2S_CLK1024_MAX(70000)*/
+/*#define DDR_tRAS_min		M2S_CLK_MIN(42)*/
+/*#define DDR_tWR			M2S_CLK_MIN(15)*/
 
 /*
  * There are no these timings exactly in spec, so take smth
@@ -116,146 +120,185 @@ int dram_init (void)
 	 */
 	M2S_SYSREG->ddrb_nb_size_cr = 0;
 
-#if (DDR_BL == 16)
-	/*
-	 * Disable all DDR Bridge buffers
-	 * We suspect some bug in the buffering scheme, so disable
-	 * this for now
-	 */
-	M2S_SYSREG->ddrb_cr = 0;
-#endif
-
-	/*
-	 * Configure mode, and mapping:
-	 * - LPDDR1 + PHY-16 + ECC_DISABLE
-	 * - BANK:1-0,COL:9-0,ROW:12-0 <-> src[2]..
-	 */
 	ddr->ddrc.DYN_POWERDOWN_CR = (0 << REG_DDRC_POWERDOWN_EN);
-	ddr->ddrc.PWR_SAVE_1_CR = (4 << REG_DDRC_POST_SELFREF_GAP_X32_SHIFT) |
-		(0xc << REG_DDRC_POWERDOWN_TO_X32_SHIFT);
-
-	ddr->ddrc.MODE_CR = (  1 << REG_DDRC_MOBILE) |
-			    (  1 << REG_DDRC_SDRAM) |
-			    (0x1 << REG_DDRC_DATA_BUS_WIDTH);
-	ddr->ddrc.ADDR_MAP_BANK_CR  = 0x099F;
-	ddr->ddrc.ADDR_MAP_COL_1_CR = 0x3333;
-	ddr->ddrc.ADDR_MAP_COL_2_CR = 0xFFFF;
-	ddr->ddrc.ADDR_MAP_COL_3_CR = 0x3300;
-	ddr->ddrc.ADDR_MAP_ROW_1_CR = 0x7777;
-	ddr->ddrc.ADDR_MAP_ROW_2_CR = 0x0FFF;
 
 	/*
-	 * Setup timings
+	 * Apply DDR settings from Microsemi
 	 */
-	ddr->ddrc.DYN_REFRESH_1_CR = DDR_tRFC << REG_DDRC_T_RFC_MIN;
-	ddr->ddrc.DYN_REFRESH_2_CR = (DDR_tREFI << REG_DDRC_T_RFC_NOM_X32);
-	ddr->ddrc.CKE_RSTN_CYCLES_1_CR = DDR_tCKE_pre << REG_DDRC_PRE_CKE_X1024;
-	ddr->ddrc.CKE_RSTN_CYCLES_2_CR = DDR_tCKE_post << REG_DDRC_POST_CKE_X1024;
-	ddr->ddrc.DRAM_BANK_ACT_TIMING_CR = (DDR_tRCD << REG_DDRC_T_RCD) |
-					    (DDR_tCCD << REG_DDRC_T_CCD) |
-					    (DDR_tRRD << REG_DDRC_T_RRD) |
-					    (DDR_tRP << REG_DDRC_T_RP);
-	ddr->ddrc.DRAM_BANK_TIMING_PARAM_CR = DDR_tRC << REG_DDRC_T_RC;
-	ddr->ddrc.DRAM_MR_TIMING_PARAM_CR = DDR_tMRD << REG_DDRC_T_MRD;
-	ddr->ddrc.DRAM_RAS_TIMING_CR = (DDR_tRAS_max << REG_DDRC_T_RAS_MAX) |
-				       (DDR_tRAS_min << REG_DDRC_T_RAS_MIN);
-	ddr->ddrc.DFI_RDDATA_EN_CR = DDR_CL << REG_DDRC_DFI_T_RDDATA_EN;
+	ddr->ddrc.DYN_SOFT_RESET_CR =			0;
+	ddr->ddrc.DYN_REFRESH_1_CR =			0x27de;
+	ddr->ddrc.DYN_REFRESH_2_CR =			0x30f;
+	/* ddr->ddrc.DYN_POWERDOWN_CR =			0x02; */
+	ddr->ddrc.DYN_DEBUG_CR =			0x00;
+	ddr->ddrc.MODE_CR =				0x101;
+	ddr->ddrc.ADDR_MAP_BANK_CR =			0x999;
+	ddr->ddrc.ECC_DATA_MASK_CR =			0x0000;
+	ddr->ddrc.ADDR_MAP_COL_1_CR =			0x3333;
+	ddr->ddrc.ADDR_MAP_COL_2_CR =			0xffff;
+	ddr->ddrc.ADDR_MAP_ROW_1_CR =			0x8888;
+	ddr->ddrc.ADDR_MAP_ROW_2_CR =			0x8ff;
+	ddr->ddrc.INIT_1_CR =				0x0001;
+	ddr->ddrc.CKE_RSTN_CYCLES_1_CR =		0x4242;
+	ddr->ddrc.CKE_RSTN_CYCLES_2_CR =		0x8;
+	ddr->ddrc.INIT_MR_CR =				0x520;
+	ddr->ddrc.INIT_EMR_CR =				0x44;
+	ddr->ddrc.INIT_EMR2_CR =			0x0000;
+	ddr->ddrc.INIT_EMR3_CR =			0x0000;
+	ddr->ddrc.DRAM_BANK_TIMING_PARAM_CR =		0xce0;
+	ddr->ddrc.DRAM_RD_WR_LATENCY_CR =		0x86;
+	ddr->ddrc.DRAM_RD_WR_PRE_CR =			0x235;
+	ddr->ddrc.DRAM_MR_TIMING_PARAM_CR =		0x5c;
+	ddr->ddrc.DRAM_RAS_TIMING_CR =			0x10f;
+	ddr->ddrc.DRAM_RD_WR_TRNARND_TIME_CR =		0x178;
+	ddr->ddrc.DRAM_T_PD_CR =			0x33;
+	ddr->ddrc.DRAM_BANK_ACT_TIMING_CR =		0x1947;
+	ddr->ddrc.ODT_PARAM_1_CR =			0x10;
+	ddr->ddrc.ODT_PARAM_2_CR =			0x0000;
+	ddr->ddrc.ADDR_MAP_COL_3_CR =			0x3300;
+	/* ddr->ddrc.DEBUG_CR =				0x3300; */
+	ddr->ddrc.MODE_REG_RD_WR_CR =			0x0000;
+	ddr->ddrc.MODE_REG_DATA_CR =			0x0000;
+	ddr->ddrc.PWR_SAVE_1_CR =			0x506;
+	ddr->ddrc.PWR_SAVE_2_CR =			0x0000;
+	ddr->ddrc.ZQ_LONG_TIME_CR =			0x200;
+	ddr->ddrc.ZQ_SHORT_TIME_CR =			0x40;
+	ddr->ddrc.ZQ_SHORT_INT_REFRESH_MARGIN_1_CR =	0x12;
+	ddr->ddrc.ZQ_SHORT_INT_REFRESH_MARGIN_2_CR =	0x2;
+	ddr->ddrc.PERF_PARAM_1_CR =			0x4000;
+	ddr->ddrc.HPR_QUEUE_PARAM_1_CR =		0x80f8;
+	ddr->ddrc.HPR_QUEUE_PARAM_2_CR =		0x7;
+	ddr->ddrc.LPR_QUEUE_PARAM_1_CR =		0x80f8;
+	ddr->ddrc.LPR_QUEUE_PARAM_2_CR =		0x7;
+	ddr->ddrc.WR_QUEUE_PARAM_CR =			0x200;
+	ddr->ddrc.PERF_PARAM_2_CR =			0x400;
+	ddr->ddrc.PERF_PARAM_3_CR =			0x0000;
+	ddr->ddrc.DFI_RDDATA_EN_CR =			0x5;
+	ddr->ddrc.DFI_MIN_CTRLUPD_TIMING_CR =		0x0003;
+	ddr->ddrc.DFI_MAX_CTRLUPD_TIMING_CR =		0x0040;
+	ddr->ddrc.DFI_WR_LVL_CONTROL_1_CR =		0x0000;
+	ddr->ddrc.DFI_WR_LVL_CONTROL_2_CR =		0x0000;
+	ddr->ddrc.DFI_RD_LVL_CONTROL_1_CR =		0x0000;
+	ddr->ddrc.DFI_RD_LVL_CONTROL_2_CR =		0x0000;
+	ddr->ddrc.DFI_CTRLUPD_TIME_INTERVAL_CR =	0x309;
+	/* ddr->ddrc.DYN_SOFT_RESET_CR2 =		0x4; */
+	ddr->ddrc.AXI_FABRIC_PRI_ID_CR =		0x0000;
+	ddr->ddrc.ECC_INT_CLR_REG =			0x0000;
 
-	ddr->ddrc.DRAM_RD_WR_LATENCY_CR = (DDR_WL << REG_DDRC_WRITE_LATENCY) |
-					  (DDR_CL << REG_DDRC_READ_LATENCY);
+	ddr->phy.DYN_BIST_TEST_CR =			0x0;
+	ddr->phy.DYN_BIST_TEST_ERRCLR_1_CR =		0x0;
+	ddr->phy.DYN_BIST_TEST_ERRCLR_2_CR =		0x0;
+	ddr->phy.DYN_BIST_TEST_ERRCLR_3_CR =		0x0;
+	ddr->phy.BIST_TEST_SHIFT_PATTERN_1_CR =		0x0;
+	ddr->phy.BIST_TEST_SHIFT_PATTERN_2_CR =		0x0;
+	ddr->phy.BIST_TEST_SHIFT_PATTERN_3_CR =		0x0;
+	ddr->phy.DYN_LOOPBACK_TEST_CR =			0x0000;
+	ddr->phy.BOARD_LOOPBACK_CR =			0x0;
+	ddr->phy.CTRL_SLAVE_RATIO_CR =			0x80;
+	ddr->phy.CTRL_SLAVE_FORCE_CR =			0x0;
+	ddr->phy.CTRL_SLAVE_DELAY_CR =			0x0;
+	ddr->phy.DATA_SLICE_IN_USE_CR =			0xf;
+	ddr->phy.LVL_NUM_OF_DQ0_CR =			0x0;
+	ddr->phy.DQ_OFFSET_1_CR =			0x0;
+	ddr->phy.DQ_OFFSET_2_CR =			0x0;
+	ddr->phy.DQ_OFFSET_3_CR =			0x0;
+	ddr->phy.DIS_CALIB_RST_CR =			0x0;
+	ddr->phy.DLL_LOCK_DIFF_CR =			0xb;
+	ddr->phy.FIFO_WE_IN_DELAY_1_CR =		0x0;
+	ddr->phy.FIFO_WE_IN_DELAY_2_CR =		0x0;
+	ddr->phy.FIFO_WE_IN_DELAY_3_CR =		0x0;
+	ddr->phy.FIFO_WE_IN_FORCE_CR =			0x0;
+	ddr->phy.FIFO_WE_SLAVE_RATIO_1_CR =		0x80;
+	ddr->phy.FIFO_WE_SLAVE_RATIO_2_CR =		0x2004;
+	ddr->phy.FIFO_WE_SLAVE_RATIO_3_CR =		0x100;
+	ddr->phy.FIFO_WE_SLAVE_RATIO_4_CR =		0x8;
+	ddr->phy.GATELVL_INIT_MODE_CR =			0x0;
+	ddr->phy.GATELVL_INIT_RATIO_1_CR =		0x0;
+	ddr->phy.GATELVL_INIT_RATIO_2_CR =		0x0;
+	ddr->phy.GATELVL_INIT_RATIO_3_CR =		0x0;
+	ddr->phy.GATELVL_INIT_RATIO_4_CR =		0x0;
+	ddr->phy.LOCAL_ODT_CR =				0x1;
+	ddr->phy.INVERT_CLKOUT_CR =			0x0;
+	ddr->phy.RD_DQS_SLAVE_DELAY_1_CR =		0x0;
+	ddr->phy.RD_DQS_SLAVE_DELAY_2_CR =		0x0;
+	ddr->phy.RD_DQS_SLAVE_DELAY_3_CR =		0x0;
+	ddr->phy.RD_DQS_SLAVE_FORCE_CR =		0x0;
+	ddr->phy.RD_DQS_SLAVE_RATIO_1_CR =		0x4050;
+	ddr->phy.RD_DQS_SLAVE_RATIO_2_CR =		0x501;
+	ddr->phy.RD_DQS_SLAVE_RATIO_3_CR =		0x5014;
+	ddr->phy.RD_DQS_SLAVE_RATIO_4_CR =		0x0;
+	ddr->phy.WR_DQS_SLAVE_DELAY_1_CR =		0x0;
+	ddr->phy.WR_DQS_SLAVE_DELAY_2_CR =		0x0;
+	ddr->phy.WR_DQS_SLAVE_DELAY_3_CR =		0x0;
+	ddr->phy.WR_DQS_SLAVE_FORCE_CR =		0x0;
+	ddr->phy.WR_DQS_SLAVE_RATIO_1_CR =		0x0;
+	ddr->phy.WR_DQS_SLAVE_RATIO_2_CR =		0x0;
+	ddr->phy.WR_DQS_SLAVE_RATIO_3_CR =		0x0;
+	ddr->phy.WR_DQS_SLAVE_RATIO_4_CR =		0x0;
+	ddr->phy.WR_DATA_SLAVE_DELAY_1_CR =		0x0;
+	ddr->phy.WR_DATA_SLAVE_DELAY_2_CR =		0x0;
+	ddr->phy.WR_DATA_SLAVE_DELAY_3_CR =		0x0;
+	ddr->phy.WR_DATA_SLAVE_FORCE_CR =		0x0;
+	ddr->phy.WR_DATA_SLAVE_RATIO_1_CR =		0x50;
+	ddr->phy.WR_DATA_SLAVE_RATIO_2_CR =		0x501;
+	ddr->phy.WR_DATA_SLAVE_RATIO_3_CR =		0x5010;
+	ddr->phy.WR_DATA_SLAVE_RATIO_4_CR =		0x0;
+	ddr->phy.WRLVL_INIT_MODE_CR =			0x0;
+	ddr->phy.WRLVL_INIT_RATIO_1_CR =		0x0;
+	ddr->phy.WRLVL_INIT_RATIO_2_CR =		0x0;
+	ddr->phy.WRLVL_INIT_RATIO_3_CR =		0x0;
+	ddr->phy.WRLVL_INIT_RATIO_4_CR =		0x0;
+	ddr->phy.WR_RD_RL_CR =				0x43;
+	ddr->phy.RDC_FIFO_RST_ERRCNTCLR_CR =		0x0;
+	ddr->phy.RDC_WE_TO_RE_DELAY_CR =		0x3;
+	ddr->phy.USE_FIXED_RE_CR =			0x1;
+	ddr->phy.USE_RANK0_DELAYS_CR =			0x1;
+	ddr->phy.USE_LVL_TRNG_LEVEL_CR =		0x0;
+	ddr->phy.DYN_CONFIG_CR =			0x0000;
+	ddr->phy.RD_WR_GATE_LVL_CR =			0x0;
+
+	/* ddr->fic.NB_ADDR_CR =			0x0; */
+	/* ddr->fic.NBRWB_SIZE_CR =			0x0; */
+	/* ddr->fic.WB_TIMEOUT_CR =			0x0; */
+	/* ddr->fic.HPD_SW_RW_EN_CR =			0x0; */
+	/* ddr->fic.HPD_SW_RW_INVAL_CR =		0x0; */
+	/* ddr->fic.SW_WR_ERCLR_CR =			0x0; */
+	/* ddr->fic.ERR_INT_ENABLE_CR =			0x0; */
+	/* ddr->fic.NUM_AHB_MASTERS_CR =		0x0; */
+	/* ddr->fic.LOCK_TIMEOUTVAL_1_CR =		0x0; */
+	/* ddr->fic.LOCK_TIMEOUTVAL_2_CR =		0x0; */
+	/* ddr->fic.LOCK_TIMEOUT_EN_CR =		0x0; */
+
+	ddr->phy.DYN_RESET_CR =				0x1;
+	ddr->ddrc.DYN_SOFT_RESET_CR =			0x0001;
 
 	/*
-	 * DDR Mode register values
-	 * - Burst Length, CL, and BT=Interleaved
-	 * - Drive Strength 1/2
-	 */
-	val = (DDR_CL << 4) | (DDR_BT << 3) | (DDR_MR_BL << 0);
-	ddr->ddrc.INIT_MR_CR = val;
-	ddr->ddrc.INIT_EMR_CR = 0x0020;
-	ddr->ddrc.MODE_REG_DATA_CR = val;
-	ddr->ddrc.MODE_REG_RD_WR_CR = 1 << 3;
-
-	/*
-	 * Configure BL16, and related timings
-	 */
-	ddr->ddrc.PERF_PARAM_1_CR = ((DDR_BL >> 2) << REG_DDRC_BURST_RDWR);
-	ddr->ddrc.PERF_PARAM_2_CR = (DDR_BT << REG_DDRC_BURST_MODE);
-
-	ddr->ddrc.DRAM_RD_WR_TRNARND_TIME_CR = ((DDR_CL + (DDR_BL/2) + 2 -
-						 DDR_WL) << REG_DDRC_RD2WR) |
-					       ((DDR_WL + DDR_tWTR +
-						(DDR_BL/2)) << REG_DDRC_WR2RD);
-	ddr->ddrc.DRAM_RD_WR_PRE_CR = ((DDR_WL + (DDR_BL/2) +
-					DDR_tWR) << REG_DDRC_WR2PRE) |
-				      ((DDR_BL/2) << REG_DDRC_RD2PRE);
-
-	ddr->ddrc.DRAM_T_PD_CR = (DDR_tXP << REG_DDRC_T_XP) |
-				 (DDR_tCKE << REG_DDRC_T_CKE);
-
-	/*
-	 * Queue params
-	 * FIXME: clean-up these somehow
-	 */
-	ddr->ddrc.HPR_QUEUE_PARAM_1_CR = 0x80F8;
-	ddr->ddrc.HPR_QUEUE_PARAM_2_CR = 0x0007;
-	ddr->ddrc.LPR_QUEUE_PARAM_1_CR = 0x80F8;
-	ddr->ddrc.LPR_QUEUE_PARAM_2_CR = 0x0007;
-	ddr->ddrc.WR_QUEUE_PARAM_CR    = 0x0200;
-
-	/*
-	 * PHY Registers
-	 * FIXME: clean-up these somehow
-	 */
-	ddr->phy.DYN_LOOPBACK_TEST_CR		= 0x0000;
-	ddr->phy.CTRL_SLAVE_RATIO_CR		= 0x0080;
-	ddr->phy.DATA_SLICE_IN_USE_CR		= 0x000F;
-	ddr->phy.DLL_LOCK_DIFF_CR		= 0x000B;
-
-	ddr->phy.FIFO_WE_SLAVE_RATIO_1_CR	= 0x0000;
-	ddr->phy.FIFO_WE_SLAVE_RATIO_2_CR	= 0x0000;
-	ddr->phy.FIFO_WE_SLAVE_RATIO_3_CR	= 0x0000;
-	ddr->phy.FIFO_WE_SLAVE_RATIO_4_CR	= 0x0000;
-
-	ddr->phy.LOCAL_ODT_CR			= 0x0001;
-
-	ddr->phy.RD_DQS_SLAVE_RATIO_1_CR	= 0x0040;
-	ddr->phy.RD_DQS_SLAVE_RATIO_2_CR	= 0x0401;
-	ddr->phy.RD_DQS_SLAVE_RATIO_3_CR	= 0x4010;
-
-	ddr->phy.WR_DATA_SLAVE_RATIO_1_CR	= 0x0040;
-	ddr->phy.WR_DATA_SLAVE_RATIO_2_CR	= 0x0401;
-	ddr->phy.WR_DATA_SLAVE_RATIO_3_CR	= 0x4010;
-
-	ddr->phy.WR_RD_RL_CR			= 0x0000;
-	ddr->phy.RDC_WE_TO_RE_DELAY_CR		= 0x0003;
-	ddr->phy.USE_FIXED_RE_CR		= 0x0001;
-	ddr->phy.USE_RANK0_DELAYS_CR		= 0x0001;
-	ddr->phy.DYN_CONFIG_CR			= 0x0009;
-	ddr->phy.DQ_OFFSET_1_CR			= 0x0000;
-	ddr->phy.DQ_OFFSET_2_CR			= 0x0000;
-	ddr->phy.DYN_RESET_CR			= 0x0001;
-
-	ddr->ddrc.DYN_SOFT_RESET_CR		= 0x0001;
-
-	/*
-	 * Fill in global info with description of SRAM configuration.
+	 * Set up U-Boot global data
 	 */
 	gd->bd->bi_dram[0].start = CONFIG_SYS_RAM_BASE;
 	gd->bd->bi_dram[0].size = CONFIG_SYS_RAM_SIZE;
-#endif
 
-        return 0;
+#endif
+	return 0;
 }
 
 int misc_init_r(void)
 {
+	/* Try to force SPI */
+/*	MSS_SPI_init(&g_mss_spi0);
+	MSS_SPI_configure_master_mode(&g_mss_spi0,
+                                  MSS_SPI_SLAVE_0,
+                                  MSS_SPI_MODE0,
+                                  MSS_SPI_PCLK_DIV_256,
+                                  frame_size);
+  */        
 	return 0;
 }
 
 #ifdef CONFIG_M2S_ETH
 int board_eth_init(bd_t *bis)
 {
-	return m2s_eth_driver_init(bis);
+	return 0;
+	//return m2s_eth_driver_init(bis);
 }
 #endif
 

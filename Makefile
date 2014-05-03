@@ -3296,7 +3296,7 @@ m2s-som-copy2_config :  unconfig
 #########################################################################
 
 rcu-2.0_config :	unconfig
-	@$(MKCONFIG) $(@:_config=) arm arm_cortexm3 m2s-som emcraft m2s
+	@$(MKCONFIG) $(@:_config=) arm arm_cortexm3 rcu-2.0 UiB m2s
 
 #########################################################################
 ## XScale Systems

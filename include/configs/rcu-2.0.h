@@ -33,7 +33,8 @@
 /*
  * Disable debug messages
  */
-#undef DEBUG
+//#undef DEBUG
+#define DEBUG
 
 /*
  * This is an ARM Cortex-M3 CPU core
@@ -80,7 +81,7 @@
 /*
  * Monitor prompt
  */
-#define CONFIG_SYS_PROMPT		"M2S-SOM> "
+#define CONFIG_SYS_PROMPT		"RCU-2.0 Uboot> "
 
 /*
  * We want to call the CPU specific initialization
@@ -146,7 +147,7 @@
  */
 #define CONFIG_NR_DRAM_BANKS		1
 #define CONFIG_SYS_RAM_BASE		0xA0000000
-#define CONFIG_SYS_RAM_SIZE		(64 * 1024 * 1024)
+#define CONFIG_SYS_RAM_SIZE		(512 * 1024 * 1024)
 
 /*
  * Configuration of the external Flash
@@ -170,6 +171,7 @@
 #define CONFIG_SPI_FLASH_BUS		0
 #define CONFIG_SPI_FLASH_CS		0
 #define CONFIG_SPI_FLASH_MODE		3
+//#define CONFIG_SYS_FLASH_CFI_WIDTH	FLASH_CFI_16BIT /* Could this fix the bit shift issue? No? */
 #define CONFIG_SPI_FLASH_SPEED		(CONFIG_SYS_M2S_SYSREF / 4)
 #define CONFIG_SF_DEFAULT_SPEED		CONFIG_SPI_FLASH_SPEED
 #define CONFIG_SF_DEFAULT_MODE		CONFIG_SPI_FLASH_MODE
@@ -225,6 +227,7 @@
  */
 #define CONFIG_NET_MULTI
 #define CONFIG_M2S_ETH
+#define CONFIG_M2S_ETH_MODE_SGMII
 
 #define CONFIG_SYS_RX_ETH_BUFFER	2
 
@@ -291,7 +294,7 @@
 /*
  * Auto-boot sequence configuration
  */
-#define CONFIG_BOOTDELAY		3
+#define CONFIG_BOOTDELAY		10
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #define CONFIG_HOSTNAME			m2s-som
 #define CONFIG_BOOTARGS			"m2s_platform=m2s-som "\

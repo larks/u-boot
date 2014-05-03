@@ -553,3 +553,8 @@ N: Philip Balister
 E: philip@opensdr.com
 D: Port to Lyrtech SFFSDR development board.
 W: www.opensdr.com
+
+N: Lars Bratrud
+E: lars.bratrud@cern.ch
+D: Support for the ALICE Time Projection Chamber Readout Control Unit
+W: www.cern.ch
