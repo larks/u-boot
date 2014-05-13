@@ -13,6 +13,9 @@ board/UiB/rcu-2.0:
 include/configs:
   --> rcu-2.0.h - MCU configs, timing, Flash memory, etc.
 
+In addition to this, the Spansion SPI flash driver was updated with support for S25FL256:
+    --> u-boot/drivers/mtd/spi/spansion.c
+
 How to build:
 
 make config_rcu-2.0

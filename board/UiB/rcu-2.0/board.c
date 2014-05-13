@@ -1,27 +1,21 @@
 /*
  * board/UiB/rcu-2.0/board.c
  *
- * Board specific code the the Emcraft SmartFusion2 system-on-module (SOM).
+ * Board specific code for the SmartFusion2 SoC on the ALICE Time Projection Chamber RCU2 
  *
- * (C) Copyright 2012
- * Emcraft Systems, <www.emcraft.com>
- * Alexander Potashev <aspotashev@emcraft.com>
- * Vladimir Khusainov <vlad@emcraft.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ ** This file is property of and copyright by the Experimental Nuclear 
+ ** Physics Group, Dep. of Physics and Technology
+ ** University of Bergen, Norway, 2014
+ ** This file has been written by Lars Bratrud,
+ ** Lars.Bratrud@cern.ch
+ **
+ ** Permission to use, copy, modify and distribute this software and its  
+ ** documentation strictly for non-commercial purposes is hereby granted  
+ ** without fee, provided that the above copyright notice appears in all  
+ ** copies and that both the copyright notice and this permission notice  
+ ** appear in the supporting documentation. The authors make no claims    
+ ** about the suitability of this software for any purpose. It is         
+ ** provided "as is" without express or implied warranty.   
  */
 
 #include <common.h>
@@ -290,6 +284,8 @@ int misc_init_r(void)
                                   MSS_SPI_MODE0,
                                   MSS_SPI_PCLK_DIV_256,
                                   frame_size);
+
+    This did nothing
   */        
 	return 0;
 }
