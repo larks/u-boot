@@ -18,6 +18,6 @@ In addition to this, the Spansion SPI flash driver was updated with support for 
 
 How to build:
 
-make config_rcu-2.0
+make rcu-2.0_config
 make
 make u-boot.hex
