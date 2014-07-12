@@ -286,8 +286,13 @@
  */
 #define CONFIG_BOOTDELAY		10
 #define CONFIG_ZERO_BOOTDELAY_CHECK
-#define CONFIG_HOSTNAME			m2s-som
+/* #define CONFIG_HOSTNAME			m2s-som */
+#define CONFIG_HOSTNAME			rcu-2.0
+/*
 #define CONFIG_BOOTARGS			"m2s_platform=m2s-som "\
+					"console=ttyS0,115200 panic=10"
+*/
+#define CONFIG_BOOTARGS			"m2s_platform=rcu-2.0 "\
 					"console=ttyS0,115200 panic=10"
 #define CONFIG_BOOTCOMMAND		"run flashboot"
 
