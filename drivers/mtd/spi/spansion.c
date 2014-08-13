@@ -181,6 +181,14 @@ static struct spansion_spi_flash_params spansion_spi_flash_table[] = {
 		.name = "S25FL256S1",
 	},
 	*/
+    { /* Golden flash */
+        .idcode1 = 0x4017,
+        .idcode2 = 0x0140,
+        .page_size = 256,
+        .pages_per_sector[0] = 256,
+        .nr_sectors[0] = 128,
+        .name = "S25FL164K",
+    },
 };
 
 /*

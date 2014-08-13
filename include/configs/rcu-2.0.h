@@ -137,7 +137,7 @@
  */
 #define CONFIG_NR_DRAM_BANKS		1
 #define CONFIG_SYS_RAM_BASE		0xA0000000
-#define CONFIG_SYS_RAM_SIZE		(512 * 1024 * 1024)
+#define CONFIG_SYS_RAM_SIZE		(256 * 1024 * 1024)
 
 /*
  * Configuration of the external Flash
