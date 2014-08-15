@@ -22,7 +22,6 @@
 #include <netdev.h>
 #include <asm/arch/ddr.h>
 
-#include "mss_spi/mss_spi.h"
 const uint8_t frame_size = 16u;
 
 /*
