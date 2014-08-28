@@ -31,7 +31,7 @@
 /*
  * Generate DDR timings depending on the following DDR clock
  */
-#define M2S_DDR_MHZ		(CONFIG_SYS_M2S_SYSREF / (1000 * 1000))
+#define M2S_DDR_MHZ		2*(CONFIG_SYS_M2S_SYSREF / (1000 * 1000))
 
 /*
  * Common conversion macros used for DDR cfg

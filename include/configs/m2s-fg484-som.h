@@ -35,6 +35,8 @@
  * Disable debug messages
  */
 #undef DEBUG
+//#define DEBUG
+#define CONFIG_SYS_M2S_SPI_DEBUG
 
 /*
  * This is an ARM Cortex-M3 CPU core
@@ -51,7 +53,7 @@
  * known way (as of yet) to read them in run time. Hence,
  * we define them as build-time constants
  */
-#define CONFIG_SYS_M2S_SYSREF		166000000
+#define CONFIG_SYS_M2S_SYSREF		50000000
 
 /*
  * This is a specific revision of the board
@@ -306,9 +308,9 @@
 #define CONFIG_EXTRA_ENV_SETTINGS				\
 	"loadaddr=" MK_STR(UIMAGE_LOADADDR) "\0"		\
 	"ethaddr=C0:B1:3C:83:83:83\0"				\
-	"ipaddr=172.17.4.219\0"					\
-	"serverip=172.17.0.1\0"					\
-	"image=networking.uImage\0"				\
+	"ipaddr=192.168.1.11\0"					\
+	"serverip=192.168.1.10\0"					\
+	"image=rculinux/rculinux.uImage\0"				\
 	"spiaddr=" MK_STR(CONFIG_ENV_IMG_OFFSET) "\0"		\
 	"spisize=400000\0"					\
 	"spiprobe=sf probe " MK_STR(CONFIG_SPI_FLASH_BUS) "\0"	\
