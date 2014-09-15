@@ -16,6 +16,7 @@
 
 //#include <mss_sys_services.h>
 //#include <mss_comblk.h>
+#define ESRAM0_BASE_ADDR 0x20000000
 #define BUFFER_SIZE 4096
 
 /* ISP related globals */
@@ -204,6 +205,7 @@ static uint32_t read_page_from_flash(uint8_t * g_buffer, uint32_t length)
 {
 	uint32_t num_bytes;
 	int ret;
+	unsigned long addr = (unsigned long) ESRAM0_BASE_ADDR;
 	num_bytes = length;
 	
 	g_buffer = map_physmem(addr, num_bytes, MAP_WRBACK);
