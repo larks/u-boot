@@ -80,6 +80,7 @@ COBJS-$(CONFIG_STM32_ETH) += stm32_eth.o
 COBJS-$(CONFIG_LPC178X_ETH) += lpc178x_eth.o
 COBJS-$(CONFIG_LPC18XX_ETH) += lpc18xx_eth.o
 COBJS-$(CONFIG_M2S_ETH) += m2s_eth.o
+COBJS-$(CONFIG_RCU2_ETH) += rcu2_eth.o
 
 COBJS	:= $(COBJS-y)
 SRCS	:= $(COBJS:.o=.c)

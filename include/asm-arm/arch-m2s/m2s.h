@@ -83,6 +83,7 @@ struct m2s_coresf2config {
     unsigned int   config_done;
     unsigned int   init_done;
     unsigned int   clr_init_done;
+    /*TODO: Add rest of registers to this */
 };
 
 #define CORE_SF2_CFG_BASE		0x40022000u
